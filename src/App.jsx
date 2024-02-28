@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import 'dotenv/config';
 
 import GlobalStyles from './styles/GlobalStyles';
 import Dashboard from './pages/Dashboard';
