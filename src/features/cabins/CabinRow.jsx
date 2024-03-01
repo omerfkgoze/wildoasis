@@ -1,4 +1,8 @@
-import styled from "styled-components";
+import styled from 'styled-components';
+import PropTypes from 'prop-types';
+import { formatCurrency } from '../../utils/helpers';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { deleteCabin } from '../../services/apiCabins';
 
 const TableRow = styled.div`
   display: grid;
@@ -25,16 +29,59 @@ const Cabin = styled.div`
   font-size: 1.6rem;
   font-weight: 600;
   color: var(--color-grey-600);
-  font-family: "Sono";
+  font-family: 'Sono';
 `;
 
 const Price = styled.div`
-  font-family: "Sono";
+  font-family: 'Sono';
   font-weight: 600;
 `;
 
 const Discount = styled.div`
-  font-family: "Sono";
+  font-family: 'Sono';
   font-weight: 500;
   color: var(--color-green-700);
 `;
+
+function CabinRow({ cabin }) {
+  const {
+    id: cabinId,
+    name,
+    maxCapacity,
+    regularPrice,
+    discount,
+    image,
+  } = cabin;
+
+  // supabase'den fetch edilen veriler cache'de tutulur ve app.jsx'te yazdigimiz kod ile staleTime(Invalidate) ile belirtilen surede cache'den veri cekilir. Eger veriler eski ise, yeni veri fetch edilir.
+  // Bu kodda ise, delete islemi yapildiktan sonra, cache'de tutulan verileri guncellemek icin queryClient kullanilir. queryClient.invalidateQueries fonksiyonu ile cache'de tutulan veri silinir ve tekrar fetch edilir. Boylelikle, cache'de tutulan veriler guncellenmis olur ve UI'da guncel veriler goruntulenir.
+  const queryClient = useQueryClient();
+
+  const { isLoading: isDeleting, mutate } = useMutation({
+    mutationFn: deleteCabin,
+    onSuccess: () => {
+      alert('Cabin deleted successfully');
+      // Invalidate the query to refetch the fresh data
+      queryClient.invalidateQueries({ queryKey: ['cabins'] });
+    },
+    onError: err => alert(err.message),
+  });
+
+  return (
+    <TableRow role="row">
+      <Img src={image} />
+      <Cabin>{name}</Cabin>
+      <div>Fits up to {maxCapacity} guests</div>
+      <Price>{formatCurrency(regularPrice)}</Price>
+      <Discount>{formatCurrency(discount)}</Discount>
+      <button onClick={() => mutate(cabinId)} disabled={isDeleting}></button>
+      {/* //! BUG: isDeleting durumunda buton disabled olmuyor Delete */}
+    </TableRow>
+  );
+}
+
+CabinRow.propTypes = {
+  cabin: PropTypes.object.isRequired,
+};
+
+export default CabinRow;
