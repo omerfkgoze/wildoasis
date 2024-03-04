@@ -11,6 +11,20 @@ export async function getCabins() {
   return data;
 }
 
+export async function createCabin(newCabin) {
+  const { data, error } = await supabase
+    .from('cabins')
+    .insert([newCabin]) // register('name') is the same as newCabin.name thats why we can pass newCabin directly
+    .select();
+
+  if (error) {
+    console.error(error);
+    throw new Error('An error occurred while creating the cabin');
+  }
+
+  return data;
+}
+
 export async function deleteCabin(id) {
   const { data, error } = await supabase.from('cabins').delete().eq('id', id);
 
