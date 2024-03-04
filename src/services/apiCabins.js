@@ -14,7 +14,7 @@ export async function getCabins() {
 export async function createCabin(newCabin) {
   const { data, error } = await supabase
     .from('cabins')
-    .insert([newCabin]) // register('name') is the same as newCabin.name thats why we can pass newCabin directly
+    .insert([newCabin]) // in CreateCabinForm.jsx register('name') is the same as newCabin.name thats why we can pass newCabin directly
     .select();
 
   if (error) {
