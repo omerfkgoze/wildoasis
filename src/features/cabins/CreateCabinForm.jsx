@@ -54,7 +54,7 @@ function CreateCabinForm() {
 
   const queryClient = useQueryClient();
 
-  const { mutate, isLoading: isCreating } = useMutation({
+  const { mutate, status } = useMutation({
     mutationFn: createCabin,
     onSuccess: () => {
       toast.success('New cabin added successfully');
@@ -65,6 +65,8 @@ function CreateCabinForm() {
       toast.error(err.message);
     },
   });
+
+  const isCreating = status === 'pending';
 
   function onSubmit(data) {
     // mutate(data);
