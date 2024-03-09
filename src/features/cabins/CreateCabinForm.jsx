@@ -41,7 +41,7 @@ function CreateCabinForm({ cabinToEdit = {} }) {
     onSuccess: () => {
       toast.success('New cabin edited successfully');
       queryClient.invalidateQueries({ queryKey: ['cabins'] });
-      reset();
+      reset(); //! BUG: Aslinda reset() calisiyor ancak edit submit edildikten sonra form edit edilmeden onceki default verilere donuyor.
     },
     onError: err => {
       toast.error(err.message);
