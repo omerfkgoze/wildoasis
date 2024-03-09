@@ -10,22 +10,22 @@ import Textarea from '../../ui/Textarea';
 import FormRow from '../../ui/FormRow';
 
 import { useForm } from 'react-hook-form';
-import { createCabin } from '../../services/apiCabins';
+import { createEditCabin } from '../../services/apiCabins';
 
 function CreateCabinForm({ cabinToEdit = {} }) {
   const { id: editId, ...editValues } = cabinToEdit;
-  const isEdditSession = Boolean(editId);
+  const isEditSession = Boolean(editId);
 
   const { register, handleSubmit, reset, getValues, formState } = useForm({
-    defaultValues: isEdditSession ? editValues : {},
+    defaultValues: isEditSession ? editValues : {},
   });
 
   const { errors } = formState;
 
   const queryClient = useQueryClient();
 
-  const { mutate, status } = useMutation({
-    mutationFn: createCabin,
+  const { mutate: createCabin, status: createStatus } = useMutation({
+    mutationFn: createEditCabin,
     onSuccess: () => {
       toast.success('New cabin added successfully');
       queryClient.invalidateQueries({ queryKey: ['cabins'] });
@@ -36,26 +36,43 @@ function CreateCabinForm({ cabinToEdit = {} }) {
     },
   });
 
-  const isCreating = status === 'pending';
+  const { mutate: editCabin, status: editStatus } = useMutation({
+    mutationFn: ({ newCabinData, id }) => createEditCabin(newCabinData, id), // mutationFn sadece bir adet arguman alabilir. Bu yuzden, createEditCabin fonksiyonuna bir obje gonderilir.
+    onSuccess: () => {
+      toast.success('New cabin edited successfully');
+      queryClient.invalidateQueries({ queryKey: ['cabins'] });
+      reset();
+    },
+    onError: err => {
+      toast.error(err.message);
+    },
+  });
+
+  const isWorking = createStatus === 'pending' || editStatus === 'pending';
 
   function onSubmit(data) {
-    // mutate(data);
+    const image = typeof data.image === 'string' ? data.image : data.image[0];
 
-    mutate({ ...data, image: data.image[0] });
+    if (isEditSession)
+      editCabin({
+        newCabinData: { ...data, image },
+        id: editId,
+      });
+    // yukarida belirttigimiz gibi, mutationFn sadece bir adet arguman alabilir. Bu yuzden, createEditCabin fonksiyonuna bir obje gonderilir.
+    else createCabin({ ...data, image });
   }
 
   function onError(errors) {
     console.log(errors);
   }
 
-  //! BUG: isCreating durumunda buton disabled olmuyor Delete
   return (
     <Form onSubmit={handleSubmit(onSubmit, onError)}>
       <FormRow label="Cabin name" error={errors?.name?.message}>
         <Input
           type="text"
           id="name"
-          disabled={isCreating}
+          disabled={isWorking}
           {...register('name', { required: 'This field is required' })}
         />
       </FormRow>
@@ -64,7 +81,7 @@ function CreateCabinForm({ cabinToEdit = {} }) {
         <Input
           type="number"
           id="maxCapacity"
-          disabled={isCreating}
+          disabled={isWorking}
           {...register('maxCapacity', {
             required: 'This field is required',
             min: {
@@ -79,7 +96,7 @@ function CreateCabinForm({ cabinToEdit = {} }) {
         <Input
           type="number"
           id="regularPrice"
-          disabled={isCreating}
+          disabled={isWorking}
           {...register('regularPrice', {
             required: 'This field is required',
             min: {
@@ -94,7 +111,7 @@ function CreateCabinForm({ cabinToEdit = {} }) {
         <Input
           type="number"
           id="discount"
-          disabled={isCreating}
+          disabled={isWorking}
           defaultValue={0}
           {...register('discount', {
             required: 'This field is required',
@@ -112,7 +129,7 @@ function CreateCabinForm({ cabinToEdit = {} }) {
         <Textarea
           type="number"
           id="description"
-          disabled={isCreating}
+          disabled={isWorking}
           defaultValue=""
           {...register('description', { required: 'This field is required' })}
         />
@@ -123,7 +140,9 @@ function CreateCabinForm({ cabinToEdit = {} }) {
           id="image"
           accept="image/*"
           // type="file" // this is not needed because we are using FileInput component
-          {...register('image', { required: 'This field is required' })}
+          {...register('image', {
+            required: isEditSession ? false : 'This field is required',
+          })}
         />
       </FormRow>
 
@@ -132,8 +151,8 @@ function CreateCabinForm({ cabinToEdit = {} }) {
         <Button variation="secondary" type="reset">
           Cancel
         </Button>
-        <Button disabled={isCreating}>
-          {isEdditSession ? 'Edit cabin' : 'Create new cabin'}
+        <Button disabled={isWorking}>
+          {isEditSession ? 'Edit cabin' : 'Create new cabin'}
         </Button>
       </FormRow>
     </Form>

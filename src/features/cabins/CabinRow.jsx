@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { formatCurrency } from '../../utils/helpers';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { deleteCabin } from '../../services/apiCabins';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
@@ -85,6 +85,7 @@ function CabinRow({ cabin }) {
 
         <div>
           <button onClick={() => setShowForm(show => !show)}>Edit</button>
+
           <button onClick={() => mutate(cabinId)} disabled={isDeleting}>
             Delete
           </button>

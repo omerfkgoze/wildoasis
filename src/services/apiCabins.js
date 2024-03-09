@@ -11,21 +11,33 @@ export async function getCabins() {
   return data;
 }
 
-export async function createCabin(newCabin) {
+export async function createEditCabin(newCabin, id) {
+  const hasImagePath = newCabin.image?.startsWith?.(supabaseUrl);
+  console.log(hasImagePath);
+
   const imageName = `${Math.random()}-${newCabin.image.name}`.replaceAll(
     '/',
     ''
   );
 
-  const imagePath = `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
+  const imagePath = hasImagePath
+    ? newCabin.image
+    : `${supabaseUrl}/storage/v1/object/public/cabin-images/${imageName}`;
 
   // https://sounudvswkuurgeppmqo.supabase.co/storage/v1/object/public/cabin-images/cabin-001.jpg
 
-  // 1. Create a new cabin
-  const { data, error } = await supabase
-    .from('cabins')
-    .insert([{ ...newCabin, image: imagePath }]) // in CreateCabinForm.jsx register('name') is the same as newCabin.name thats why we can pass newCabin directly
-    .select();
+  // 1. Create / Edit the cabin
+  let query = supabase.from('cabins');
+
+  // A) CREATE
+  if (!id) query = query.insert([{ ...newCabin, image: imagePath }]); // in CreateCabinForm.jsx register('name') is the same as newCabin.name thats why we can pass newCabin directly
+
+  // B) EDIT
+  if (id) query = query.update({ ...newCabin, image: imagePath }).eq('id', id);
+
+  const { data, error } = await query
+    .select() // we want to get the data of the cabin that was created
+    .single(); // we want to get the single cabin that was created
 
   if (error) {
     console.error(error);
