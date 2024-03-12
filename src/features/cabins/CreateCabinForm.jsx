@@ -1,5 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import toast from 'react-hot-toast';
+import { useForm } from 'react-hook-form';
 import PropTypes from 'prop-types';
 
 import Input from '../../ui/Input';
@@ -9,10 +8,14 @@ import FileInput from '../../ui/FileInput';
 import Textarea from '../../ui/Textarea';
 import FormRow from '../../ui/FormRow';
 
-import { useForm } from 'react-hook-form';
-import { createEditCabin } from '../../services/apiCabins';
+import { useCreateCabin } from './useCreateCabin';
+import { useEditCabin } from './useEditCabin';
 
 function CreateCabinForm({ cabinToEdit = {} }) {
+  const { createStatus, createCabin } = useCreateCabin();
+  const { editStatus, editCabin } = useEditCabin();
+  const isWorking = createStatus === 'pending' || editStatus === 'pending';
+
   const { id: editId, ...editValues } = cabinToEdit;
   const isEditSession = Boolean(editId);
 
@@ -22,44 +25,35 @@ function CreateCabinForm({ cabinToEdit = {} }) {
 
   const { errors } = formState;
 
-  const queryClient = useQueryClient();
-
-  const { mutate: createCabin, status: createStatus } = useMutation({
-    mutationFn: createEditCabin,
-    onSuccess: () => {
-      toast.success('New cabin added successfully');
-      queryClient.invalidateQueries({ queryKey: ['cabins'] });
-      reset();
-    },
-    onError: err => {
-      toast.error(err.message);
-    },
-  });
-
-  const { mutate: editCabin, status: editStatus } = useMutation({
-    mutationFn: ({ newCabinData, id }) => createEditCabin(newCabinData, id), // mutationFn sadece bir adet arguman alabilir. Bu yuzden, createEditCabin fonksiyonuna bir obje gonderilir.
-    onSuccess: () => {
-      toast.success('New cabin edited successfully');
-      queryClient.invalidateQueries({ queryKey: ['cabins'] });
-      reset(); //! BUG: Aslinda reset() calisiyor ancak edit submit edildikten sonra form edit edilmeden onceki default verilere donuyor.
-    },
-    onError: err => {
-      toast.error(err.message);
-    },
-  });
-
-  const isWorking = createStatus === 'pending' || editStatus === 'pending';
-
   function onSubmit(data) {
     const image = typeof data.image === 'string' ? data.image : data.image[0];
 
     if (isEditSession)
-      editCabin({
-        newCabinData: { ...data, image },
-        id: editId,
-      });
+      editCabin(
+        {
+          newCabinData: { ...data, image },
+          id: editId,
+        },
+        {
+          // burada onSuccess ve onError fonksiyonlari kullanilabilir. Bu fonksiyonlar, useMutation hook'unun bir parcasidir. Ayrica createEditCabin data'yi return ettigi icin edit/created datasina erisebiliyoruz.
+          onSuccess: data => {
+            // console.log(data);
+            reset();
+          },
+        }
+      );
     // yukarida belirttigimiz gibi, mutationFn sadece bir adet arguman alabilir. Bu yuzden, createEditCabin fonksiyonuna bir obje gonderilir.
-    else createCabin({ ...data, image });
+    else
+      createCabin(
+        { ...data, image },
+        {
+          // burada onSuccess ve onError fonksiyonlari kullanilabilir. Bu fonksiyonlar, useMutation hook'unun bir parcasidir. Ayrica createEditCabin data'yi return ettigi icin edit/created datasina erisebiliyoruz.
+          onSuccess: data => {
+            // console.log(data);
+            reset();
+          },
+        }
+      );
   }
 
   function onError(errors) {
