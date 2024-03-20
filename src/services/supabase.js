@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
+// reconnect after 1 week of inactivity
 export const supabaseUrl = 'https://sounudvswkuurgeppmqo.supabase.co';
 
 const supabaseKey =
