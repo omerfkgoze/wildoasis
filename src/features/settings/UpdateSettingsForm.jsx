@@ -26,7 +26,7 @@ function UpdateSettingsForm() {
 
     if (!value) return;
 
-    updateSetting({ [field]: value });
+    updateSetting({ [field]: value }); //? didn't understand why we need to square bracket the field
   }
 
   return (

@@ -12,9 +12,9 @@ import { useCreateCabin } from './useCreateCabin';
 import { useEditCabin } from './useEditCabin';
 
 function CreateCabinForm({ cabinToEdit = {} }) {
-  const { createStatus, createCabin } = useCreateCabin();
-  const { editStatus, editCabin } = useEditCabin();
-  const isWorking = createStatus === 'pending' || editStatus === 'pending';
+  const { createStatus, createCabin } = useCreateCabin(); // this is a hook that we can use to create a new cabin, and get the status of the creation
+  const { editStatus, editCabin } = useEditCabin(); // this is a hook that we can use to edit a cabin, and get the status of the edition
+  const isWorking = createStatus === 'pending' || editStatus === 'pending'; // todo: createStatus and editStatus could be boolean instead of string
 
   const { id: editId, ...editValues } = cabinToEdit;
   const isEditSession = Boolean(editId);
@@ -26,7 +26,7 @@ function CreateCabinForm({ cabinToEdit = {} }) {
   const { errors } = formState;
 
   function onSubmit(data) {
-    const image = typeof data.image === 'string' ? data.image : data.image[0];
+    const image = typeof data.image === 'string' ? data.image : data.image[0]; // if the image is a string, it means that it is already hosted on Supabase
 
     if (isEditSession)
       editCabin(
