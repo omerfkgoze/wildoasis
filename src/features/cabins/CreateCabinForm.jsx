@@ -14,7 +14,7 @@ import { useEditCabin } from './useEditCabin';
 function CreateCabinForm({ cabinToEdit = {} }) {
   const { createStatus, createCabin } = useCreateCabin(); // this is a hook that we can use to create a new cabin, and get the status of the creation
   const { editStatus, editCabin } = useEditCabin(); // this is a hook that we can use to edit a cabin, and get the status of the edition
-  const isWorking = createStatus === 'pending' || editStatus === 'pending'; // todo: createStatus and editStatus could be boolean instead of string
+  const isWorking = createStatus || editStatus;
 
   const { id: editId, ...editValues } = cabinToEdit;
   const isEditSession = Boolean(editId);

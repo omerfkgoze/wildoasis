@@ -51,7 +51,7 @@ function CabinRow({ cabin }) {
   const [showForm, setShowForm] = useState(false);
   const { isDeleting, deleteCabin } = useDeleteCabin();
   const { createStatus, createCabin } = useCreateCabin();
-  const isDuplicating = createStatus === 'pending';
+  const isDuplicating = createStatus;
 
   const {
     id: cabinId,

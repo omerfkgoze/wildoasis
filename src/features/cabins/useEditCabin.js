@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 export function useEditCabin() {
   const queryClient = useQueryClient();
 
-  const { mutate: editCabin, status: editStatus } = useMutation({
+  const { mutate: editCabin, isPending: editStatus } = useMutation({
     mutationFn: ({ newCabinData, id }) => createEditCabinApi(newCabinData, id), // mutationFn sadece bir adet arguman alabilir. Bu yuzden, createEditCabinApi fonksiyonuna bir obje gonderilir.
     onSuccess: () => {
       toast.success('New cabin edited successfully');

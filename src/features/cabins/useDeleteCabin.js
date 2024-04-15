@@ -7,7 +7,7 @@ export function useDeleteCabin() {
   // Bu kodda ise, delete islemi yapildiktan sonra, cache'de tutulan verileri guncellemek icin queryClient kullanilir. queryClient.invalidateQueries fonksiyonu ile cache'de tutulan veri silinir ve tekrar fetch edilir. Boylelikle, cache'de tutulan veriler guncellenmis olur ve UI'da guncel veriler goruntulenir.
   const queryClient = useQueryClient();
 
-  const { mutate: deleteCabin, status } = useMutation({
+  const { mutate: deleteCabin, isPending: isDeleting } = useMutation({
     mutationFn: deleteCabinApi,
     onSuccess: () => {
       toast.success('Cabin deleted successfully');
@@ -17,7 +17,7 @@ export function useDeleteCabin() {
     onError: err => toast.error(err.message),
   });
 
-  const isDeleting = status === 'pending';
+  // const isDeleting = status === 'pending';
 
   return { deleteCabin, isDeleting };
 }
